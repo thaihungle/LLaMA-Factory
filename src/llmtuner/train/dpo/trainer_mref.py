@@ -125,6 +125,7 @@ class MRefDPOTrainer(DPOTrainer):
         self.ref_rejected_avg = None
         self.ref_chosen_avg2 = None
         self.ref_rejected_avg2 = None
+        self.reference_free = False
         
 
         Trainer.__init__(self, model=model, **kwargs)

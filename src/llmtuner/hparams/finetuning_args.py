@@ -102,6 +102,22 @@ class RLHFArguments:
         default="sigmoid",
         metadata={"help": "The type of DPO loss to use."},
     )
+    dpo_num_ref: Optional[int] = field(
+        default=1,
+        metadata={"help": "The number of reference policies."},
+    )
+    mref_naive: Optional[bool] = field(
+        default=False,
+        metadata={"help": "naive mref."},
+    )
+    eta: Optional[float] = field(
+        default=0.1,
+        metadata={"help": "eta clip."},
+    )
+    alpha: Optional[float] = field(
+        default=-1,
+        metadata={"help": "alpha for weighting reference."},
+    )
     dpo_label_smoothing: float = field(
         default=0.0,
         metadata={"help": "The robust DPO label smoothing parameter in cDPO that should be between 0 and 0.5."},

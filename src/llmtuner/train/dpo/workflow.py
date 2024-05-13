@@ -9,7 +9,7 @@ from ...hparams import ModelArguments
 from ...model import load_model, load_tokenizer
 from ..utils import create_modelcard_and_push, create_ref_model
 from .trainer import CustomDPOTrainer
-
+from .trainer_mref import MRefDPOTrainer
 
 if TYPE_CHECKING:
     from transformers import Seq2SeqTrainingArguments, TrainerCallback
@@ -42,19 +42,37 @@ def run_dpo(
 
     # Update arguments
     training_args.remove_unused_columns = False  # important for pairwise dataset
-
-    # Initialize our Trainer
-    trainer = CustomDPOTrainer(
-        model=model,
-        ref_model=ref_model,
-        args=training_args,
-        finetuning_args=finetuning_args,
-        tokenizer=tokenizer,
-        data_collator=data_collator,
-        callbacks=callbacks,
-        **split_dataset(dataset, data_args, training_args),
-    )
-
+    if finetuning_args.dpo_num_ref==1:
+        print("SINGLE-REFERENCE")
+        # Initialize our Trainer
+        trainer = CustomDPOTrainer(
+            model=model,
+            ref_model=ref_model,
+            args=training_args,
+            finetuning_args=finetuning_args,
+            tokenizer=tokenizer,
+            data_collator=data_collator,
+            callbacks=callbacks,
+            **split_dataset(dataset, data_args, training_args),
+        )
+    else:
+        print("MULTI-REFERENCE")
+        print(finetuning_args.mref_naive)
+        trainer = MRefDPOTrainer(
+            beta=finetuning_args.dpo_beta,
+            loss_type=finetuning_args.dpo_loss,
+            ftx_gamma=finetuning_args.dpo_ftx,
+            mref_naive=finetuning_args.mref_naive,
+            eta=finetuning_args.eta,
+            alpha=finetuning_args.alpha,
+            model=model,
+            ref_model=ref_model,
+            args=training_args,
+            tokenizer=tokenizer,
+            data_collator=data_collator,
+            callbacks=callbacks,
+            **split_dataset(dataset, data_args, training_args),
+        )
     # Training
     if training_args.do_train:
         train_result = trainer.train(resume_from_checkpoint=training_args.resume_from_checkpoint)
